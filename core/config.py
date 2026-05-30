@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = True
 
-    whisper_model: str = "small"
+    whisper_model: str = "base"
     whisper_device: str = "auto"
     whisper_compute_type: str = "auto"
 
