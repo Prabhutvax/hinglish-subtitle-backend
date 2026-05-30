@@ -66,8 +66,8 @@ def transcribe(audio_path: Path, language: str = "hi") -> list[SubtitleSegment]:
         str(audio_path),
         language=language,
         task="transcribe",
-        beam_size=5,
-        best_of=5,
+        beam_size=1,
+        best_of=1,
         vad_filter=True,            # Voice Activity Detection — skip silences
         vad_parameters={
             "min_silence_duration_ms": 500,
