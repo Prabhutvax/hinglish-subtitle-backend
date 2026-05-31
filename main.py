@@ -32,9 +32,14 @@ async def lifespan(app: FastAPI):
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     settings.audio_dir.mkdir(parents=True, exist_ok=True)
     settings.outputs_dir.mkdir(parents=True, exist_ok=True)
+
     logger.info(f"Temp dirs ready under: {settings.temp_dir.resolve()}")
-    logger.info(f"Whisper model: {settings.whisper_model} | device: {settings.whisper_device}")
+    logger.info(
+        f"Whisper model: {settings.whisper_model} | device: {settings.whisper_device}"
+    )
+
     yield
+
     logger.info("Shutdown.")
 
 
@@ -48,7 +53,7 @@ Upload a video, get readable subtitles, download SRT. Built for Indian content c
 
 ### Pipeline
 1. **POST /upload** — Upload MP4/MOV/MP3/WAV
-2. **POST /transcribe** — Whisper Large v3 → timed segments
+2. **POST /transcribe** — Whisper → timed segments
 3. **POST /resegment** — Split into short subtitle lines (3–6 words)
 4. **POST /export** — Download SRT (or MP4 with burned subtitles)
 
@@ -62,22 +67,17 @@ Upload → Transcribe → Export (resegment runs automatically inside export).
 # ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-        "https://*.vercel.app",        # Vercel preview deployments
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # MVP: allow all origins
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Routes ────────────────────────────────────────────────────────────────────
-app.include_router(upload.router,     tags=["1. Upload"])
+app.include_router(upload.router, tags=["1. Upload"])
 app.include_router(transcribe.router, tags=["2. Transcribe"])
-app.include_router(resegment.router,  tags=["3. Re-segment"])
-app.include_router(export.router,     tags=["4. Export"])
+app.include_router(resegment.router, tags=["3. Re-segment"])
+app.include_router(export.router, tags=["4. Export"])
 
 
 @app.get("/", tags=["Health"])
@@ -89,6 +89,7 @@ async def root():
         "docs": "/docs",
         "whisper_model": settings.whisper_model,
     }
+
 
 @app.get("/health", tags=["Health"])
 async def health():
